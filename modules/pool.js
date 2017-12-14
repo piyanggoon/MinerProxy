@@ -32,21 +32,21 @@ function connectPool(agent) {
         if(pool) {
             if(obj.id == 1) {
                 if(obj.error) {
-                    console.log("[POOL] subscribing, " + obj.error)
+                    console.log("[POOL] Subscribing, " + obj.error)
                 } else if(typeof obj.result[1] !== 'undefined') {
                     console.log("[POOL] Stratum session id " + obj.result[1]);
                     process.send({ type: "updateSessionID", arg: obj.result[1] });
                 }
             } else if(obj.id == 2) {
                 if(obj.error) {
-                    console.log("[POOL] authorizing, " + obj.error)
+                    console.log("[POOL] Authorizing, " + obj.error)
                 } else if(obj.result) {
-                    console.log("[POOL] authorization granted")
+                    console.log("[POOL] Authorization granted")
                     if(config.xnsub) {
                         sendToPool({ id: 3, method: "mining.extranonce.subscribe", params: [] });
                     }
                 } else {
-                    console.log("[POOL] authorization failed")
+                    console.log("[POOL] Authorization failed")
                 }
             } else if(obj.id == 3 && config.xnsub) {
                 console.log("[POOL][IN] " + JSON.stringify(obj));
@@ -69,16 +69,16 @@ function connectPool(agent) {
             process.send({ type: "sendToMiner", obj: obj });
         }
     }).on('error', (err) => {
-        console.log("[POOL] invalid pool request, " + err)
+        console.log("[POOL] Invalid pool request, " + err)
     });
 
     pool.on('error', (err) => {
-        console.log("[POOL] error, " + err.message)
+        console.log("[POOL] Error, " + err.message)
         process.send({ type: "destroySocket" });
     });
 
     pool.on('end', () => {
-        console.log("[POOL] closed the connection...")
+        console.log("[POOL] Closed the connection...")
         process.send({ type: "destroySocket" });
     });
 }

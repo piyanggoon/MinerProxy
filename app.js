@@ -48,16 +48,16 @@ net.createServer((socket) => {
             }
         }
     }).on('error', (err) => {
-        console.log("[MINER] invalid miner request, " + err)
+        console.log("[MINER] Invalid miner request, " + err)
     });
 
     socket.on('error', (err) => {
-        console.log("[MINER] error, " + err.message)
+        console.log("[MINER] Error, " + err.message)
         destroySocket();
     });
 
     socket.on('end', () => {
-        console.log("[MINER] closed the connection...")
+        console.log("[MINER] Closed the connection...")
         destroySocket();
     });
 
