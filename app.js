@@ -28,7 +28,7 @@ net.createServer((socket) => {
                     socket.agent = obj.params[0];
                     socket.pool.send({ type: "connectPool", agent: socket.agent });
                 } else {
-                    console.log("[MINER] Pool still alive")
+                    console.log("[MINER] Connection still alive")
                 }
             } else if(obj.method == "mining.authorize") {
                 if(socket.sessionID) {
