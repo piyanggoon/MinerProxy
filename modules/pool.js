@@ -29,45 +29,43 @@ function connectPool(agent) {
     });
 
     pool.pipe(ndjson.parse({ strict: true })).on('data', (obj) => {
-        if(pool) {
-            if(obj.id == 1) {
-                if(obj.error) {
-                    console.log("[POOL] Subscribing, " + obj.error)
-                } else if(typeof obj.result[1] !== 'undefined') {
-                    console.log("[POOL] Stratum session id " + obj.result[1]);
-                    process.send({ type: "updateSessionID", arg: obj.result[1] });
+        if(obj.id == 1) {
+            if(obj.error) {
+                console.log("[POOL] Subscribing, " + obj.error)
+            } else if(typeof obj.result[1] !== 'undefined') {
+                console.log("[POOL] Stratum session id " + obj.result[1]);
+                process.send({ type: "updateSessionID", arg: obj.result[1] });
+            }
+        } else if(obj.id == 2) {
+            if(obj.error) {
+                console.log("[POOL] Authorizing, " + obj.error)
+            } else if(obj.result) {
+                console.log("[POOL] Authorization granted")
+                if(config.xnsub) {
+                    sendToPool({ id: 3, method: "mining.extranonce.subscribe", params: [] });
                 }
-            } else if(obj.id == 2) {
-                if(obj.error) {
-                    console.log("[POOL] Authorizing, " + obj.error)
-                } else if(obj.result) {
-                    console.log("[POOL] Authorization granted")
-                    if(config.xnsub) {
-                        sendToPool({ id: 3, method: "mining.extranonce.subscribe", params: [] });
-                    }
-                } else {
-                    console.log("[POOL] Authorization failed")
-                }
-            } else if(obj.id == 3 && config.xnsub) {
+            } else {
+                console.log("[POOL] Authorization failed")
+            }
+        } else if(obj.id == 3 && config.xnsub) {
+            console.log("[POOL][IN] " + JSON.stringify(obj));
+        } else {
+            if(obj.method == "mining.notify") {
+                //console.log("[POOL] New work: " + obj.params[3]);
+            } else if(obj.method == "mining.set_difficulty") {
+                //console.log("[POOL] New diff: " + obj.params[0]);
+            } else if(obj.method == "mining.set_extranonce") {
                 console.log("[POOL][IN] " + JSON.stringify(obj));
             } else {
-                if(obj.method == "mining.notify") {
-                    //console.log("[POOL] New work: " + obj.params[3]);
-                } else if(obj.method == "mining.set_difficulty") {
-                    //console.log("[POOL] New diff: " + obj.params[0]);
-                } else if(obj.method == "mining.set_extranonce") {
-                    console.log("[POOL][IN] " + JSON.stringify(obj));
+                if(obj.error == null) {
+                    console.log("[POOL] Work #" + obj.id + ", Accepted")
                 } else {
-                    if(obj.error == null) {
-                        console.log("[POOL] Work #" + obj.id + ", Accepted")
-                    } else {
-                        console.log("[POOL] Work #" + obj.id + ", Rejected: " + obj.error[1])
-                    }
+                    console.log("[POOL] Work #" + obj.id + ", Rejected: " + obj.error[1])
                 }
             }
-
-            process.send({ type: "sendToMiner", obj: obj });
         }
+        
+        process.send({ type: "sendToMiner", obj: obj });
     }).on('error', (err) => {
         console.log("[POOL] Invalid pool request, " + err)
     });
