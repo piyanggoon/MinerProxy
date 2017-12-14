@@ -47,7 +47,7 @@ net.createServer((socket) => {
                 socket.pool.send({ type: "sendToPool", obj: obj });
             }
         }
-    }).on('error',(err) => {
+    }).on('error', (err) => {
         console.log("[MINER] invalid miner request, " + err)
     });
 

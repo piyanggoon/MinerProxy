@@ -68,7 +68,7 @@ function connectPool(agent) {
 
             process.send({ type: "sendToMiner", obj: obj });
         }
-    }).on('error',(err) => {
+    }).on('error', (err) => {
         console.log("[POOL] invalid pool request, " + err)
     });
 
