@@ -1,9 +1,9 @@
 {
     "pool": {
-        "xnsub": false,
-        "worker": "SegwitMiner",
         "host": "sz.ss.btc.com",
-        "port": 1800
+        "port": 1800,
+        "worker": "SegwitMiner",
+        "xnsub": false
     },
     "listen": {
         "port": 1000
