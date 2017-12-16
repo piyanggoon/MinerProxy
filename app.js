@@ -1,23 +1,22 @@
 const net = require('net');
 const ndjson = require('ndjson');
-const child = require('child_process');
+const child_process = require('child_process');
 const helper = require('./modules/helper.js');
 const config = require('./config.json');
 
 net.createServer((socket) => {
-    socket.agent = "NodeProxy";
     socket.sessionID = null;
 
     let args = [config.pool.host, config.pool.port, config.pool.worker, config.pool.xnsub];
-    socket.pool = child.fork('./modules/pool.js', args);
+    socket.pool = child_process.fork('./modules/pool.js', args);
 
     socket.pool.on('message', (msg) => {
-        if(msg.type == "sendToMiner") {
+        if(msg.cmd == "send") {
             socket.write(JSON.stringify(msg.obj) + "\n");
-        } else if(msg.type == "updateSessionID") {
-            socket.sessionID = msg.arg;
-        } else if(msg.type == "destroySocket") {
-            destroySocket();
+        } else if(msg.cmd == "sessionID") {
+            socket.sessionID = msg.sessionID;
+        } else if(msg.cmd == "closeSocket") {
+            closeSocket();
         }
     });
 
@@ -25,17 +24,16 @@ net.createServer((socket) => {
         if(socket && socket.pool) {
             if(obj.method == "mining.subscribe") {
                 if(!socket.sessionID) {
-                    socket.agent = obj.params[0];
-                    socket.pool.send({ type: "connectPool", agent: socket.agent });
+                    socket.pool.send({ cmd: "connectPool", agent: obj.params });
+                    return;
                 } else {
                     console.log("[MINER] Connection still alive")
                 }
             } else if(obj.method == "mining.authorize") {
                 if(socket.sessionID) {
-                    obj.id = 2; // authorization
+                    obj.id = 2;
                     obj.params = helper.changeWorker(obj.params, config.pool.worker);
                     console.log("[INFO] New peer connected : " + obj.params[0] + " (" + socket.sessionID + ")")
-                    socket.pool.send({ type: "sendToPool", obj: obj });
                 } else {
                     console.log("[MINER] No pool session id")
                 }
@@ -44,8 +42,8 @@ net.createServer((socket) => {
                     obj.params = helper.changeWorker(obj.params, config.pool.worker);
                     console.log("[MINER] Submit work for " + obj.params[0] + " (" + obj.id + ")");
                 }
-                socket.pool.send({ type: "sendToPool", obj: obj });
             }
+            socket.pool.send({ cmd: "sendToPool", obj: obj });
         }
     }).on('error', (err) => {
         console.log("[MINER] Invalid miner request, " + err)
@@ -53,15 +51,15 @@ net.createServer((socket) => {
 
     socket.on('error', (err) => {
         console.log("[MINER] Error, " + err.message)
-        destroySocket();
+        closeSocket();
     });
 
     socket.on('end', () => {
         console.log("[MINER] Closed the connection...")
-        destroySocket();
+        closeSocket();
     });
 
-    function destroySocket() {
+    function closeSocket() {
         if(socket && socket.pool) {
             socket.pool.kill();
             socket.pool = null;
