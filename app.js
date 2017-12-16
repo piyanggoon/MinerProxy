@@ -31,7 +31,7 @@ net.createServer((socket) => {
                 }
             } else if(obj.method == "mining.authorize") {
                 if(socket.sessionID) {
-                    obj.id = 2;
+                    obj.id = 2; // mining.authorize
                     obj.params = helper.changeWorker(obj.params, config.pool.worker);
                     console.log("[INFO] New peer connected : " + obj.params[0] + " (" + socket.sessionID + ")")
                 } else {
@@ -43,7 +43,7 @@ net.createServer((socket) => {
                     console.log("[MINER] Submit work for " + obj.params[0] + " (" + obj.id + ")");
                 }
             }
-            socket.pool.send({ cmd: "sendToPool", obj: obj });
+            socket.pool.send({ cmd: "send", obj: obj });
         }
     }).on('error', (err) => {
         console.log("[MINER] Invalid miner request, " + err)

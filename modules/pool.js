@@ -37,22 +37,22 @@ function connectPool(agent) {
                 process.send({ cmd: "sessionID", sessionID: obj.result[1] });
             }
         } else if(obj.id == 2) { // mining.authorize
-            if(obj.error) {
-                console.log("[POOL] Authorizing, " + obj.error)
-            } else if(obj.result) {
+            if(obj.result) {
                 console.log("[POOL] Authorization granted")
                 if(config.xnsub) {
                     send({ id: 3, method: "mining.extranonce.subscribe", params: [] });
                 }
+            } else if(obj.error) {
+                console.log("[POOL] Authorizing, " + obj.error)
             } else {
                 console.log("[POOL] Authorization failed")
             }
         } else if(obj.id == 3 && config.xnsub) { // mining.extranonce.subscribe
-            console.log("[POOL][IN] " + JSON.stringify(obj));
+            //console.log("[POOL][IN] " + JSON.stringify(obj));
         } else {
             if(typeof obj.method !== 'undefined') {
                 if(obj.method == "mining.set_extranonce") {
-                    console.log("[POOL][IN] " + JSON.stringify(obj));
+                    //console.log("[POOL][IN] " + JSON.stringify(obj));
                 }
             } else {
                 if(!obj.error) {
