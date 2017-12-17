@@ -11,49 +11,49 @@ net.createServer((socket) => {
     socket.pool = child_process.fork('./modules/pool.js', args);
 
     socket.pool.on('message', (msg) => {
-        if(msg.cmd == "send") {
+        if(msg.cmd === "send") {
             socket.write(JSON.stringify(msg.obj) + "\n");
-        } else if(msg.cmd == "sessionID") {
+        } else if(msg.cmd === "sessionID") {
             socket.sessionID = msg.sessionID;
-        } else if(msg.cmd == "closeSocket") {
+        } else if(msg.cmd === "closeSocket") {
             closeSocket();
         }
     });
 
     socket.pipe(ndjson.parse({ strict: true })).on('data', (obj) => {
         if(socket && socket.pool) {
-            if(obj.method == "mining.subscribe") {
+            if(obj.method === "mining.subscribe") {
                 if(!socket.sessionID) {
                     socket.pool.send({ cmd: "connectPool", agent: obj.params });
                     return;
                 } else {
                     console.log("[MINER] Connection still alive")
                 }
-            } else if(obj.method == "mining.authorize") {
+            } else if(obj.method === "mining.authorize") {
                 if(socket.sessionID) {
                     obj.id = 2; // mining.authorize
                     obj.params = helper.changeWorker(obj.params, config.pool.worker);
-                    console.log("[INFO] New peer connected : " + obj.params[0] + " (" + socket.sessionID + ")")
+                    console.log(`[INFO] New peer connected : ${obj.params[0]} (${socket.sessionID})`)
                 } else {
                     console.log("[MINER] No pool session id")
                 }
-            } else if(obj.method == "mining.submit") {
+            } else if(obj.method === "mining.submit") {
                 obj.params = helper.changeWorker(obj.params, config.pool.worker);
-                console.log("[MINER] Submit work for " + obj.params[0] + " (" + obj.id + ")");
+                console.log(`[MINER] Submit work for ${obj.params[0]} (${obj.id})`);
             }
             socket.pool.send({ cmd: "send", obj: obj });
         }
     }).on('error', (err) => {
-        console.log("[MINER] Invalid miner request, " + err)
+        console.log(`[MINER] Invalid miner request, ${err}`);
     });
 
     socket.on('error', (err) => {
-        console.log("[MINER] Error, " + err.message)
+        console.log(`[MINER] Error, ${err.message}`);
         closeSocket();
     });
 
     socket.on('end', () => {
-        console.log("[MINER] Closed the connection...")
+        console.log("[MINER] Closed the connection...");
         closeSocket();
     });
 
