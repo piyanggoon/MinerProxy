@@ -37,11 +37,9 @@ net.createServer((socket) => {
                 } else {
                     console.log("[MINER] No pool session id")
                 }
-            } else {
-                if(obj.method == "mining.submit") {
-                    obj.params = helper.changeWorker(obj.params, config.pool.worker);
-                    console.log("[MINER] Submit work for " + obj.params[0] + " (" + obj.id + ")");
-                }
+            } else if(obj.method == "mining.submit") {
+                obj.params = helper.changeWorker(obj.params, config.pool.worker);
+                console.log("[MINER] Submit work for " + obj.params[0] + " (" + obj.id + ")");
             }
             socket.pool.send({ cmd: "send", obj: obj });
         }
