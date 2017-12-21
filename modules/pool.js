@@ -56,7 +56,7 @@ function connectPool(agent) {
         } else {
             if(typeof obj.method !== 'undefined') {
                 if(obj.method === "mining.set_extranonce") {
-                    console.log(`[POOL] Extranonce #${obj.params[0]}`)
+                    console.log(`[POOL] Extranonce #${obj.params[0]} (${obj.params[1]})`);
                 }
             } else {
                 if(!obj.error) {
