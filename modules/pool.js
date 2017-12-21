@@ -31,8 +31,8 @@ function connectPool(agent) {
     pool.pipe(ndjson.parse({ strict: true })).on('data', (obj) => {
         if(obj.id === 1) { // mining.subscribe
             if(obj.error) {
-                console.log(`[POOL] Subscribing, ${obj.error}`)
-            } else if(typeof obj.result[1] !== 'undefined') {
+                console.log(`[POOL] Subscribing, ${obj.error}`);
+            } else {
                 console.log(`[POOL] Stratum session id ${obj.result[1]}`);
                 process.send({ cmd: "sessionID", sessionID: obj.result[1] });
             }
@@ -43,28 +43,32 @@ function connectPool(agent) {
                     send({ id: 3, method: "mining.extranonce.subscribe", params: [] });
                 }
             } else if(obj.error) {
-                console.log(`[POOL] Authorizing, ${obj.error}`)
+                console.log(`[POOL] Authorizing, ${obj.error}`);
             } else {
-                console.log("[POOL] Authorization failed")
+                console.log("[POOL] Authorization failed");
             }
         } else if(obj.id === 3 && config.xnsub) { // mining.extranonce.subscribe
-            //console.log("[POOL][IN] " + JSON.stringify(obj));
+            if(obj.error) {
+                console.log(`[POOL] Extranonce, ${obj.error[1]}`);
+            } else {
+                console.log("[POOL] Extranonce, subscribe");
+            }
         } else {
             if(typeof obj.method !== 'undefined') {
                 if(obj.method === "mining.set_extranonce") {
-                    //console.log("[POOL][IN] " + JSON.stringify(obj));
+                    console.log(`[POOL] Extranonce #${obj.params[0]}`)
                 }
             } else {
                 if(!obj.error) {
-                    console.log(`[POOL] Work #${obj.id}, Accepted`)
+                    console.log(`[POOL] Work #${obj.id}, Accepted`);
                 } else {
-                    console.log(`[POOL] Work #${obj.id}, Rejected: ${obj.error[1]}`)
+                    console.log(`[POOL] Work #${obj.id}, Rejected: ${obj.error[1]}`);
                 }
             }
         }
         process.send({ cmd: "send", obj: obj });
     }).on('error', (err) => {
-        console.log(`[POOL] Invalid pool request, ${err}`)
+        console.log(`[POOL] Invalid pool request, ${err}`);
     });
 
     pool.on('error', (err) => {

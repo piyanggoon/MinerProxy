@@ -27,15 +27,15 @@ net.createServer((socket) => {
                     socket.pool.send({ cmd: "connectPool", agent: obj.params });
                     return;
                 } else {
-                    console.log("[MINER] Connection still alive")
+                    console.log("[MINER] Connection still alive");
                 }
             } else if(obj.method === "mining.authorize") {
                 if(socket.sessionID) {
                     obj.id = 2; // mining.authorize
                     obj.params = helper.changeWorker(obj.params, config.pool.worker);
-                    console.log(`[INFO] New peer connected : ${obj.params[0]} (${socket.sessionID})`)
+                    console.log(`[INFO] New peer connected : ${obj.params[0]} (${socket.sessionID})`);
                 } else {
-                    console.log("[MINER] No pool session id")
+                    console.log("[MINER] No pool session id");
                 }
             } else if(obj.method === "mining.submit") {
                 obj.params = helper.changeWorker(obj.params, config.pool.worker);
