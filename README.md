@@ -1,1 +1,1 @@
-# MinerProxy
+# node-miner-proxy
